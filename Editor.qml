@@ -12,6 +12,9 @@ import "IconStore.js" as IconStore
 // `omarchy-shell shell toggle lucentdread.workspace-icons '{"workspace":3}'`),
 // search Nerd Font glyphs by name and pick one. Saved to the plugin's own
 // file, ~/.config/omarchy/workspace-icons.json.
+//
+// Uses only qs.Ui pieces present since Omarchy 4.0.6 (BorderSurface, Button);
+// the window and the search line are plain Quickshell / Qt types.
 Item {
   id: root
 
@@ -43,6 +46,7 @@ Item {
   property int cellSize: Math.max(Style.space(44), Style.font.display + Style.spacing.md)
   property int cardWidth: Math.min(Style.space(560), panel.width - Style.gapsOut * 2)
   property int cardHeight: Math.min(Style.space(600), panel.height - Style.gapsOut * 2)
+  property var targetScreen: null
   readonly property int columns: Math.max(1, Math.floor(resultGrid.width / cellSize))
 
   function open(payloadJson) {
@@ -52,10 +56,19 @@ Item {
     if (requested >= 1 && requested <= 10) workspace = Math.floor(requested)
     else if (Hyprland.focusedWorkspace && Hyprland.focusedWorkspace.id >= 1 && Hyprland.focusedWorkspace.id <= 10)
       workspace = Hyprland.focusedWorkspace.id
+    targetScreen = focusedScreen()
     opened = true
     search.text = ""
     rebuild()
     Qt.callLater(function() { search.forceActiveFocus() })
+  }
+
+  function focusedScreen() {
+    var monitor = Hyprland.focusedMonitor
+    var name = monitor ? String(monitor.name || "") : ""
+    for (var i = 0; i < Quickshell.screens.length; i++)
+      if (Quickshell.screens[i].name === name) return Quickshell.screens[i]
+    return Quickshell.screens.length > 0 ? Quickshell.screens[0] : null
   }
 
   function close() {
@@ -112,10 +125,16 @@ Item {
     }
   }
 
-  OverlayWindow {
+  PanelWindow {
     id: panel
-    shown: root.opened
+    visible: root.opened && !!root.targetScreen
+    screen: root.targetScreen
+    anchors { top: true; bottom: true; left: true; right: true }
+    exclusionMode: ExclusionMode.Ignore
+    color: "transparent"
     WlrLayershell.namespace: "lucentdread-workspace-icons"
+    WlrLayershell.layer: WlrLayer.Overlay
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
     Rectangle {
       anchors.fill: parent
@@ -246,13 +265,18 @@ Item {
           width: parent.width
           height: Math.max(Style.space(34), Style.font.heading + Style.spacing.controlPaddingY * 2)
 
-          FilterInput {
+          // A TextInput so input-method text reaches it; navigation keys go
+          // to keyHandler first, and whatever it leaves is typed here.
+          TextInput {
             id: search
             anchors.left: parent.left
             anchors.right: clearButton.left
             anchors.rightMargin: Style.spacing.md
             anchors.verticalCenter: parent.verticalCenter
-            keyHandler: keyHandler
+            focus: true
+            clip: true
+            Keys.priority: Keys.BeforeItem
+            Keys.forwardTo: [keyHandler]
             color: root.foreground
             font.family: root.fontFamily
             font.pixelSize: Style.font.heading

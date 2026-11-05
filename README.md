@@ -4,6 +4,10 @@ Animated workspace dots for the Omarchy bar, where every workspace can show an i
 
 ![Workspace Icons: the bar with icons on workspaces 1, 2, 3 and 5, and the icon editor](preview.png)
 
+## Compatibility
+
+Works on Omarchy 4.0.6 (stable) and later, including the Quattro development channel. It only uses the parts of the Omarchy shell present since 4.0.6.
+
 ## Install
 
 ```bash
