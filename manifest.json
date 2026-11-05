@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "lucentdread.workspace-icons",
+  "name": "Workspace Icons",
+  "version": "1.0.0",
+  "author": "LucentDread",
+  "license": "MIT",
+  "description": "Animated workspace dots for the Omarchy bar where each workspace can show an icon font glyph you pick. Right click a workspace to choose its icon.",
+  "kinds": ["bar-widget", "panel"],
+  "entryPoints": {
+    "barWidget": "Workspaces.qml",
+    "panel": "Editor.qml"
+  },
+  "barWidget": {
+    "displayName": "Workspace Icons",
+    "description": "Animated workspace dots with your own icon per workspace",
+    "category": "Compositor",
+    "allowMultiple": false,
+    "defaultSection": "left"
+  }
+}
